@@ -1,1839 +1,2032 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0a0e27">
-    <title>Detailing Auto Care SA - Job Manager</title>
-    <script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        :root {
-            --navy: #0a0e27;
-            --navy-light: #1a1f3a;
-            --chrome: #c0c0c0;
-            --chrome-light: #e8e8e8;
-            --chrome-dark: #808080;
-            --red: #e63946;
-            --red-dark: #c1121f;
-            --white: #ffffff;
-            --black: #000000;
-            --accent-blue: #4dabf7;
-            --urgent-red: #ff0000;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--navy);
-            min-height: 100vh;
-            color: var(--white);
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 100%;
-            min-height: 100vh;
-            background: linear-gradient(180deg, var(--navy) 0%, var(--navy-light) 100%);
-            position: relative;
-        }
-        
-        @media (min-width: 768px) {
-            .container {
-                max-width: 480px;
-                margin: 0 auto;
-                box-shadow: 0 0 40px rgba(0,0,0,0.5);
-            }
-        }
-        
-        /* Logo Header with Shield Logo */
-        .logo-header {
-            background: linear-gradient(180deg, #000000 0%, var(--navy) 100%);
-            padding: 15px 20px;
-            text-align: center;
-            border-bottom: 3px solid var(--red);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .logo-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .company-logo {
-            width: 160px;
-            height: auto;
-            max-height: 130px;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8));
-            margin-bottom: 5px;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: center;
-        }
-        
-        .header-btn {
-            background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
-        }
-        
-        .header-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 5px rgba(230, 57, 70, 0.3);
-        }
-        
-        .header-btn.secondary {
-            background: transparent;
-            border: 2px solid var(--chrome);
-            color: var(--chrome);
-        }
-        
-        /* Navigation */
-        .nav-tabs {
-            display: flex;
-            background: var(--navy-light);
-            border-bottom: 2px solid rgba(192,192,192,0.1);
-        }
-        
-        .nav-tab {
-            flex: 1;
-            padding: 16px;
-            background: none;
-            border: none;
-            font-weight: 700;
-            color: var(--chrome-dark);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .nav-tab.active {
-            color: var(--red);
-        }
-        
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 20%;
-            right: 20%;
-            height: 3px;
-            background: var(--red);
-            border-radius: 3px 3px 0 0;
-        }
-        
-        /* Views */
-        .view {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s;
-        }
-        
-        .view.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, rgba(192,192,192,0.1) 0%, rgba(192,192,192,0.05) 100%);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(192,192,192,0.2);
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 36px;
-            font-weight: 900;
-            color: var(--red);
-            text-shadow: 0 0 10px rgba(230, 57, 70, 0.3);
-        }
-        
-        .stat-label {
-            font-size: 11px;
-            color: var(--chrome-dark);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-        
-        /* Job Cards - Priority Queue Styling */
-        .job-card {
-            background: linear-gradient(135deg, rgba(192,192,192,0.1) 0%, rgba(192,192,192,0.05) 100%);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(192,192,192,0.2);
-            border-left: 4px solid var(--chrome);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.2s;
-        }
-        
-        .job-card:active {
-            transform: scale(0.98);
-        }
-        
-        /* Over 5 days without completion - URGENT */
-        .job-card.status-urgent {
-            border-left-color: var(--urgent-red);
-            background: linear-gradient(135deg, rgba(255,0,0,0.15) 0%, rgba(255,0,0,0.05) 100%);
-            border: 2px solid var(--urgent-red);
-            box-shadow: 0 0 20px rgba(255,0,0,0.2);
-        }
-        
-        /* Has completion date - Normal priority */
-        .job-card.status-dated {
-            border-left-color: var(--accent-blue);
-        }
-        
-        .job-card.status-completed {
-            border-left-color: var(--accent-blue);
-            opacity: 0.6;
-        }
-        
-        .job-card.status-tbd {
-            border-left-color: var(--chrome-dark);
-        }
-        
-        .job-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 12px;
-        }
-        
-        .car-info h3 {
-            font-size: 18px;
-            color: var(--chrome-light);
-            margin-bottom: 4px;
-            font-weight: 700;
-        }
-        
-        .reg-plate {
-            background: linear-gradient(180deg, #ffd700 0%, #ffed4e 50%, #e6c200 100%);
-            color: var(--navy);
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-weight: 900;
-            font-size: 14px;
-            display: inline-block;
-            margin-top: 4px;
-            border: 2px solid var(--navy);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .job-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .status-pending {
-            background: rgba(230, 57, 70, 0.2);
-            color: var(--red);
-            border: 1px solid var(--red);
-        }
-        
-        .status-completed {
-            background: rgba(77, 171, 247, 0.2);
-            color: var(--accent-blue);
-            border: 1px solid var(--accent-blue);
-        }
-        
-        .status-urgent {
-            background: var(--urgent-red);
-            color: white;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-        
-        .status-tbd {
-            background: rgba(128, 128, 128, 0.2);
-            color: var(--chrome-dark);
-            border: 1px solid var(--chrome-dark);
-        }
-        
-        .job-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 12px;
-            font-size: 13px;
-            color: var(--chrome-dark);
-        }
-        
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .detail-label {
-            font-weight: 700;
-            color: var(--chrome);
-            margin-bottom: 2px;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-        
-        .urgent-warning {
-            grid-column: 1 / -1;
-            background: var(--urgent-red);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-weight: 800;
-            text-align: center;
-            margin-top: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 12px;
-        }
-        
-        .thumbnail-strip {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-        
-        .thumb {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            background: var(--navy);
-            flex-shrink: 0;
-            border: 2px solid rgba(192,192,192,0.3);
-        }
-        
-        /* Form Styles */
-        .form-section {
-            background: linear-gradient(135deg, rgba(192,192,192,0.1) 0%, rgba(192,192,192,0.05) 100%);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(192,192,192,0.2);
-        }
-        
-        .section-title {
-            color: var(--chrome-light);
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 20px;
-            background: var(--red);
-            border-radius: 2px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--chrome);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid rgba(192,192,192,0.3);
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.2s;
-            background: rgba(10, 14, 39, 0.5);
-            color: var(--white);
-        }
-        
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--red);
-            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
-        }
-        
-        .form-input:disabled {
-            background: rgba(192,192,192,0.1);
-            color: var(--chrome-dark);
-            border-color: rgba(192,192,192,0.1);
-        }
-        
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .input-with-action {
-            position: relative;
-        }
-        
-        .input-action-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
-            color: white;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            font-size: 20px;
-            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
-        }
-        
-        .input-action-btn:active {
-            transform: translateY(-50%) scale(0.95);
-            box-shadow: 0 2px 5px rgba(230, 57, 70, 0.3);
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            padding: 16px;
-            background: rgba(230, 57, 70, 0.1);
-            border-radius: 12px;
-            border: 2px solid rgba(230, 57, 70, 0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .checkbox-group:active {
-            background: rgba(230, 57, 70, 0.2);
-        }
-        
-        .checkbox-group input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            accent-color: var(--red);
-        }
-        
-        .checkbox-group label {
-            font-weight: 700;
-            color: var(--chrome-light);
-            cursor: pointer;
-            flex: 1;
-            font-size: 14px;
-        }
-        
-        /* Photo Grid */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 12px;
-        }
-        
-        .photo-slot {
-            aspect-ratio: 1;
-            background: rgba(10, 14, 39, 0.5);
-            border: 2px dashed rgba(192,192,192,0.3);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .photo-slot:active {
-            background: rgba(192,192,192,0.1);
-            transform: scale(0.95);
-        }
-        
-        .photo-slot.has-image {
-            border: none;
-            background: none;
-        }
-        
-        .photo-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-        
-        .add-photo-icon {
-            font-size: 28px;
-            color: var(--red);
-            margin-bottom: 4px;
-        }
-        
-        .photo-label {
-            font-size: 10px;
-            color: var(--chrome-dark);
-            text-align: center;
-            padding: 0 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        /* Scanner Modal */
-        .scanner-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--navy);
-            z-index: 1000;
-            flex-direction: column;
-        }
-        
-        .scanner-modal.active {
-            display: flex;
-        }
-        
-        .scanner-header {
-            background: var(--navy-light);
-            color: var(--chrome-light);
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--red);
-        }
-        
-        .scanner-title {
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .close-btn {
-            background: rgba(230, 57, 70, 0.2);
-            border: none;
-            color: var(--red);
-            font-size: 28px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        
-        .close-btn:active {
-            background: var(--red);
-            color: white;
-        }
-        
-        .scanner-viewfinder {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--black);
-        }
-        
-        #cameraFeed {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .scan-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%;
-            max-width: 400px;
-            height: 220px;
-            border: 3px solid var(--red);
-            border-radius: 16px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.7);
-        }
-        
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--red);
-            animation: scan 2s linear infinite;
-            box-shadow: 0 0 15px var(--red);
-        }
-        
-        @keyframes scan {
-            0% { top: 0; }
-            50% { top: 100%; }
-            100% { top: 0; }
-        }
-        
-        .scan-instructions {
-            position: absolute;
-            bottom: 120px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: var(--chrome-light);
-            padding: 0 20px;
-            font-size: 16px;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            background: rgba(10, 14, 39, 0.8);
-            padding: 12px;
-            margin: 0 20px;
-            border-radius: 8px;
-            border: 1px solid var(--red);
-        }
-        
-        .capture-btn {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(180deg, var(--chrome-light) 0%, var(--chrome) 50%, var(--chrome-dark) 100%);
-            border: 4px solid var(--navy);
-            border-radius: 50%;
-            margin: 30px auto;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(192,192,192,0.4);
-        }
-        
-        .capture-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: var(--red);
-            border-radius: 50%;
-            border: 3px solid var(--navy);
-        }
-        
-        .capture-btn:active {
-            transform: scale(0.9);
-        }
-        
-        .capture-btn:active::after {
-            background: var(--red-dark);
-        }
-        
-        /* OCR Progress */
-        .ocr-progress {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: var(--navy-light);
-            padding: 20px;
-            border-radius: 16px;
-            color: var(--chrome-light);
-            display: none;
-            border: 2px solid var(--red);
-        }
-        
-        .ocr-progress.active {
-            display: block;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(192,192,192,0.2);
-            border-radius: 3px;
-            margin-top: 12px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--red) 0%, var(--accent-blue) 100%);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        /* Submit Button */
-        .submit-btn {
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 18px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 20px;
-            margin-bottom: 40px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
-        }
-        
-        .submit-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 3px 10px rgba(230, 57, 70, 0.4);
-        }
-        
-        .submit-btn:disabled {
-            background: var(--chrome-dark);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--chrome-dark);
-        }
-        
-        .empty-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--navy-light);
-            color: var(--chrome-light);
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: 700;
-            z-index: 2000;
-            opacity: 0;
-            transition: all 0.3s;
-            border: 2px solid var(--red);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 90%;
-            text-align: center;
-        }
-        
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        
-        .delete-btn {
-            background: rgba(230, 57, 70, 0.2);
-            color: var(--red);
-            border: 1px solid var(--red);
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-        }
-        
-        .delete-btn:active {
-            background: var(--red);
-            color: white;
-        }
-        
-        /* Queue Legend */
-        .queue-legend {
-            background: rgba(255,0,0,0.1);
-            border: 2px solid var(--urgent-red);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            font-size: 12px;
-        }
-        
-        .queue-legend-title {
-            color: var(--urgent-red);
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 4px 0;
-            color: var(--chrome-dark);
-        }
-        
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        
-        .dot-urgent { background: var(--urgent-red); }
-        .dot-dated { background: var(--accent-blue); }
-        .dot-normal { background: var(--chrome); }
-        
-        /* Print Styles */
-        @media print {
-            .logo-header, .nav-tabs, .submit-btn, .input-action-btn, .delete-btn, .queue-legend {
-                display: none !important;
-            }
-            body { background: white; color: black; }
-            .job-card { 
-                border: 1px solid #ccc; 
-                page-break-inside: avoid; 
-                opacity: 1 !important;
-            }
-            .job-card.status-urgent {
-                border: 2px solid #ff0000;
-                background: #ffeeee;
-            }
-        }
-        
-        #fileInput { display: none; }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(192,192,192,0.2);
-            border-top-color: var(--red);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#07111f" />
+  <title>Detailing Auto Care SA - Job Manager</title>
+  <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #050b16;
+      --bg-soft: #0a1426;
+      --panel: rgba(12, 21, 37, 0.9);
+      --panel-2: rgba(18, 30, 50, 0.9);
+      --stroke: rgba(255,255,255,0.1);
+      --stroke-strong: rgba(255,255,255,0.18);
+      --chrome: #cfd6e1;
+      --chrome-bright: #f2f5fa;
+      --chrome-dark: #8e99a9;
+      --red: #e11622;
+      --red-deep: #9e0d16;
+      --red-glow: rgba(225, 22, 34, 0.35);
+      --ice: #78d8ff;
+      --ice-soft: rgba(120, 216, 255, 0.18);
+      --gold: #ffd54f;
+      --success: #57b8ff;
+      --urgent: #ff3b30;
+      --shadow: 0 18px 40px rgba(0,0,0,0.45);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    html, body {
+      background:
+        radial-gradient(circle at top center, rgba(225,22,34,0.12), transparent 28%),
+        radial-gradient(circle at 50% 0%, rgba(120,216,255,0.08), transparent 22%),
+        linear-gradient(180deg, #040914 0%, #07111f 45%, #09162a 100%);
+      min-height: 100%;
+    }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--chrome-bright);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 25%, transparent 75%, rgba(255,255,255,0.02) 100%),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 38px,
+          rgba(255,255,255,0.015) 39px,
+          transparent 40px
+        );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 100%;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 520px;
+        margin: 0 auto;
+        border-left: 1px solid rgba(255,255,255,0.07);
+        border-right: 1px solid rgba(255,255,255,0.07);
+        box-shadow: 0 0 70px rgba(0,0,0,0.5);
+        background: linear-gradient(180deg, rgba(4,9,20,0.92), rgba(9,22,42,0.96));
+      }
+    }
+
+    .logo-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 18px 18px 16px;
+      backdrop-filter: blur(16px);
+      background:
+        linear-gradient(180deg, rgba(4,9,20,0.94) 0%, rgba(7,17,31,0.88) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.26);
+    }
+
+    .logo-shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at top left, rgba(120,216,255,0.12), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(225,22,34,0.18), transparent 32%),
+        linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), var(--shadow);
+      padding: 18px 16px 14px;
+    }
+
+    .logo-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 18%, transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 45%);
+      pointer-events: none;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .company-logo {
+      width: min(100%, 270px);
+      max-height: 160px;
+      height: auto;
+      object-fit: contain;
+      filter:
+        drop-shadow(0 10px 18px rgba(0,0,0,0.55))
+        drop-shadow(0 0 20px rgba(120,216,255,0.12));
+      display: block;
+    }
+
+    .brand-kicker {
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--chrome-dark);
+      font-weight: 700;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #b8c0cc;
+      max-width: 360px;
+    }
+
+    .header-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-btn, .submit-btn, .input-action-btn, .capture-btn, .delete-btn, .nav-tab {
+      touch-action: manipulation;
+    }
+
+    .header-btn {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--red) 0%, #c4131d 55%, var(--red-deep) 100%);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      box-shadow: 0 8px 18px rgba(225, 22, 34, 0.24);
+    }
+
+    .header-btn::before,
+    .submit-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.18) 36%, transparent 52%);
+      transform: translateX(-120%);
+      transition: transform 0.55s ease;
+    }
+
+    .header-btn:hover::before,
+    .submit-btn:hover::before {
+      transform: translateX(120%);
+    }
+
+    .header-btn:active, .submit-btn:active, .delete-btn:active, .input-action-btn:active {
+      transform: translateY(1px) scale(0.985);
+    }
+
+    .header-btn.secondary {
+      background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+      border: 1px solid rgba(207,214,225,0.24);
+      color: var(--chrome);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px 16px 4px;
+      background: linear-gradient(180deg, rgba(6,12,22,0.6), transparent);
+    }
+
+    .nav-tab {
+      padding: 14px 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      font-weight: 800;
+      color: var(--chrome-dark);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s ease;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .nav-tab.active {
+      color: var(--chrome-bright);
+      border-color: rgba(225,22,34,0.45);
+      background:
+        radial-gradient(circle at top, rgba(225,22,34,0.22), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(225,22,34,0.12), 0 12px 24px rgba(225,22,34,0.14);
+    }
+
+    .nav-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      bottom: 6px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent 0%, var(--red) 30%, var(--ice) 70%, transparent 100%);
+    }
+
+    .view {
+      display: none;
+      padding: 16px;
+      animation: fadeIn 0.28s ease;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card,
+    .form-section,
+    .job-card,
+    .queue-legend {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025)),
+        linear-gradient(145deg, rgba(8,16,28,0.95), rgba(13,22,38,0.92));
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 28px rgba(0,0,0,0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before,
+    .form-section::before,
+    .job-card::before,
+    .queue-legend::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(125deg, rgba(255,255,255,0.03) 0%, transparent 26%, transparent 74%, rgba(255,255,255,0.02) 100%);
+      pointer-events: none;
+    }
+
+    .stat-card {
+      padding: 18px 14px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--chrome-bright);
+      text-shadow: 0 0 24px rgba(255,255,255,0.08);
+    }
+
+    .stat-value.red {
+      color: #ff4b57;
+      text-shadow: 0 0 18px rgba(255, 59, 48, 0.22);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--chrome-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 700;
+    }
+
+    .queue-legend {
+      padding: 16px;
+      margin-bottom: 18px;
+      border-color: rgba(225,22,34,0.18);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(225,22,34,0.18), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        linear-gradient(145deg, rgba(8,16,28,0.95), rgba(13,22,38,0.92));
+    }
+
+    .queue-legend-title {
+      color: var(--chrome-bright);
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 7px 0;
+      color: #b9c2cf;
+      font-size: 12px;
+    }
+
+    .legend-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .dot-urgent { background: var(--urgent); color: var(--urgent); }
+    .dot-dated { background: var(--ice); color: var(--ice); }
+    .dot-normal { background: var(--chrome); color: var(--chrome); }
+
+    .job-card {
+      padding: 18px;
+      margin-bottom: 14px;
+      border-left: 4px solid rgba(255,255,255,0.16);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .job-card:active {
+      transform: scale(0.992);
+    }
+
+    .job-card.status-urgent {
+      border-left-color: var(--urgent);
+      border-color: rgba(255, 59, 48, 0.28);
+      background:
+        radial-gradient(circle at top right, rgba(255,59,48,0.18), transparent 26%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        linear-gradient(145deg, rgba(26,10,12,0.98), rgba(46,14,17,0.92));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 14px 28px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,59,48,0.12);
+    }
+
+    .job-card.status-dated {
+      border-left-color: var(--ice);
+    }
+
+    .job-card.status-completed {
+      border-left-color: var(--success);
+      opacity: 0.7;
+    }
+
+    .job-card.status-tbd {
+      border-left-color: #95a0af;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .car-info h3 {
+      font-size: 18px;
+      line-height: 1.25;
+      color: var(--chrome-bright);
+      margin-bottom: 7px;
+      font-weight: 800;
+    }
+
+    .reg-plate {
+      background: linear-gradient(180deg, #ffe58e 0%, #ffd54f 46%, #e5b000 100%);
+      color: #06111e;
+      padding: 5px 12px;
+      border-radius: 9px;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 14px;
+      display: inline-block;
+      border: 2px solid #06111e;
+      letter-spacing: 0.08em;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.28);
+    }
+
+    .job-status {
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .status-pending {
+      background: rgba(225, 22, 34, 0.14);
+      color: #ff6a73;
+      border: 1px solid rgba(225, 22, 34, 0.38);
+    }
+
+    .status-completed {
+      background: rgba(87, 184, 255, 0.12);
+      color: #89d4ff;
+      border: 1px solid rgba(87, 184, 255, 0.34);
+    }
+
+    .status-urgent {
+      background: rgba(255,59,48,0.18);
+      color: #ffd2cf;
+      border: 1px solid rgba(255,59,48,0.48);
+      animation: pulse 1.8s infinite;
+    }
+
+    .status-tbd {
+      background: rgba(255,255,255,0.06);
+      color: #b0bac7;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 rgba(255,59,48,0); }
+      50% { box-shadow: 0 0 18px rgba(255,59,48,0.18); }
+    }
+
+    .job-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #cad2dd;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .detail-item span:last-child {
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    .detail-label {
+      font-weight: 800;
+      color: var(--chrome-dark);
+      margin-bottom: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .urgent-warning {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(255,59,48,0.22), rgba(158,13,22,0.28));
+      color: white;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 900;
+      text-align: center;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 10px 18px rgba(100,0,0,0.18);
+    }
+
+    .thumbnail-strip {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: var(--bg-soft);
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.18);
+    }
+
+    .form-section {
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      color: var(--chrome-bright);
+      margin-bottom: 18px;
+      font-size: 17px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, var(--red), var(--ice));
+      border-radius: 999px;
+      box-shadow: 0 0 14px rgba(225,22,34,0.3);
+    }
+
+    .section-hint {
+      font-size: 12px;
+      color: var(--chrome-dark);
+      margin: -8px 0 14px;
+      line-height: 1.45;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #d7dde7;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+        rgba(8, 16, 28, 0.72);
+      color: var(--chrome-bright);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: #7f8b9c;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: rgba(225,22,34,0.6);
+      box-shadow: 0 0 0 4px rgba(225,22,34,0.12), 0 0 24px rgba(225,22,34,0.08);
+    }
+
+    .form-input:disabled {
+      background: rgba(255,255,255,0.04);
+      color: var(--chrome-dark);
+      border-color: rgba(255,255,255,0.08);
+    }
+
+    .form-textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .input-with-action {
+      position: relative;
+    }
+
+    .input-with-action .form-input {
+      padding-right: 60px;
+    }
+
+    .input-action-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, var(--red) 0%, #d91622 50%, var(--red-deep) 100%);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.12);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 18px;
+      box-shadow: 0 8px 16px rgba(225,22,34,0.22);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px;
+      background:
+        linear-gradient(135deg, rgba(225,22,34,0.1), rgba(120,216,255,0.06));
+      border-radius: 16px;
+      border: 1px solid rgba(225,22,34,0.22);
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      accent-color: var(--red);
+      flex-shrink: 0;
+    }
+
+    .checkbox-group label {
+      font-weight: 700;
+      color: var(--chrome-bright);
+      cursor: pointer;
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    @media (min-width: 420px) {
+      .photo-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .photo-slot {
+      aspect-ratio: 1;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+        rgba(8,16,28,0.6);
+      border: 1.5px dashed rgba(255,255,255,0.18);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .photo-slot:active {
+      transform: scale(0.98);
+    }
+
+    .photo-slot.has-image {
+      border-style: solid;
+      border-color: rgba(255,255,255,0.12);
+      background: rgba(8,16,28,0.75);
+    }
+
+    .photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+
+    .add-photo-icon {
+      font-size: 28px;
+      color: var(--red);
+      margin-bottom: 4px;
+      font-weight: 300;
+    }
+
+    .photo-label {
+      font-size: 10px;
+      color: var(--chrome-dark);
+      text-align: center;
+      padding: 0 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      line-height: 1.35;
+    }
+
+    .scanner-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #030913;
+      z-index: 1000;
+      flex-direction: column;
+    }
+
+    .scanner-modal.active {
+      display: flex;
+    }
+
+    .scanner-header {
+      background: linear-gradient(180deg, #091321 0%, #07111f 100%);
+      color: var(--chrome-light);
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(225,22,34,0.28);
+    }
+
+    .scanner-title {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .close-btn {
+      background: rgba(225,22,34,0.14);
+      border: 1px solid rgba(225,22,34,0.3);
+      color: #ff8b92;
+      font-size: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .scanner-viewfinder {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    #cameraFeed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scan-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 85%;
+      max-width: 400px;
+      height: 220px;
+      border: 2px solid rgba(225,22,34,0.9);
+      border-radius: 20px;
+      box-shadow:
+        0 0 0 9999px rgba(0,0,0,0.65),
+        0 0 28px rgba(225,22,34,0.22),
+        inset 0 0 28px rgba(120,216,255,0.08);
+    }
+
+    .scan-overlay::before,
+    .scan-overlay::after {
+      content: "";
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border: 3px solid var(--ice);
+      opacity: 0.9;
+    }
+
+    .scan-overlay::before {
+      top: -2px;
+      left: -2px;
+      border-right: none;
+      border-bottom: none;
+      border-top-left-radius: 18px;
+    }
+
+    .scan-overlay::after {
+      bottom: -2px;
+      right: -2px;
+      border-left: none;
+      border-top: none;
+      border-bottom-right-radius: 18px;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--ice) 50%, transparent 100%);
+      animation: scan 2s linear infinite;
+      box-shadow: 0 0 16px var(--ice);
+    }
+
+    @keyframes scan {
+      0% { top: 8px; }
+      50% { top: calc(100% - 10px); }
+      100% { top: 8px; }
+    }
+
+    .scan-instructions {
+      position: absolute;
+      bottom: 118px;
+      left: 18px;
+      right: 18px;
+      text-align: center;
+      color: var(--chrome-bright);
+      font-size: 14px;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+      background: rgba(7,17,31,0.82);
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(225,22,34,0.25);
+      backdrop-filter: blur(12px);
+      line-height: 1.4;
+    }
+
+    .capture-btn {
+      width: 84px;
+      height: 84px;
+      background: linear-gradient(180deg, var(--chrome-bright) 0%, #ccd4de 55%, #8893a4 100%);
+      border: 4px solid #07111f;
+      border-radius: 50%;
+      margin: 24px auto 28px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.35);
+    }
+
+    .capture-btn::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      background: linear-gradient(180deg, var(--red) 0%, #cf1722 60%, var(--red-deep) 100%);
+      border-radius: 50%;
+      border: 3px solid rgba(7,17,31,0.8);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.16);
+    }
+
+    .ocr-progress {
+      position: absolute;
+      bottom: 18px;
+      left: 18px;
+      right: 18px;
+      background: rgba(7,17,31,0.9);
+      padding: 18px;
+      border-radius: 16px;
+      color: var(--chrome-light);
+      display: none;
+      border: 1px solid rgba(225,22,34,0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .ocr-progress.active {
+      display: block;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 7px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red) 0%, var(--ice) 100%);
+      width: 0%;
+      transition: width 0.3s;
+      box-shadow: 0 0 18px rgba(120,216,255,0.26);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--red) 0%, #cd1721 55%, var(--red-deep) 100%);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 6px;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      box-shadow: 0 14px 28px rgba(225,22,34,0.24);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn:disabled {
+      background: #576170;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 62px 20px;
+      color: var(--chrome-dark);
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 6px 18px rgba(225,22,34,0.12));
+    }
+
+    .empty-title {
+      color: var(--chrome-bright);
+      margin-bottom: 8px;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(7,17,31,0.92);
+      color: var(--chrome-bright);
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 800;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.28s ease;
+      border: 1px solid rgba(225,22,34,0.26);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+      max-width: min(92%, 420px);
+      text-align: center;
+      backdrop-filter: blur(12px);
+      line-height: 1.4;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .delete-btn {
+      background: linear-gradient(180deg, rgba(225,22,34,0.12), rgba(225,22,34,0.08));
+      color: #ff8d95;
+      border: 1px solid rgba(225,22,34,0.28);
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 14px;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.2s;
+    }
+
+    .delete-btn:active {
+      background: rgba(225,22,34,0.2);
+      color: white;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.12);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    @media print {
+      .logo-header,
+      .nav-tabs,
+      .submit-btn,
+      .input-action-btn,
+      .delete-btn,
+      .queue-legend {
+        display: none !important;
+      }
+
+      body {
+        background: white !important;
+        color: black !important;
+      }
+
+      .container {
+        max-width: 100%;
+        box-shadow: none;
+      }
+
+      .job-card {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+        opacity: 1 !important;
+        background: white !important;
+        color: black !important;
+      }
+
+      .job-card.status-urgent {
+        border: 2px solid #ff0000;
+        background: #ffeeee !important;
+      }
+    }
+  </style>
 </head>
 <body>
-    <input type="file" id="fileInput" accept="image/*" capture="environment">
-    
-    <div class="container">
-        <!-- Logo Header with Actual Company Logo -->
-        <div class="logo-header">
-            <div class="logo-container">
-                <!-- Using the uploaded company logo - make sure this file is in the same folder as the HTML -->
-                <img src="5729(1).png" alt="Detailing Auto Care SA" class="company-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-                <div style="display: none; font-size: 24px; font-weight: 900; color: var(--chrome); text-transform: uppercase; letter-spacing: 2px; margin: 20px 0;">
-                    DETAILING<br>AUTO CARE SA
-                </div>
-            </div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="exportRunSheet()">📄 Export Run Sheet</button>
-                <button class="header-btn secondary" onclick="clearAllData()">🗑️ Clear All</button>
-            </div>
-        </div>
-        
-        <!-- Navigation -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('jobs')">Job Run Sheet</button>
-            <button class="nav-tab" onclick="switchTab('new')">+ New Job</button>
-        </div>
-        
-        <!-- Jobs List View -->
-        <div id="jobsView" class="view active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="activeCount">0</div>
-                    <div class="stat-label">Active Jobs</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="urgentCount" style="color: var(--urgent-red);">0</div>
-                    <div class="stat-label">Over 5 Days</div>
-                </div>
-            </div>
-            
-            <!-- Queue Legend -->
-            <div class="queue-legend">
-                <div class="queue-legend-title">⚠ Priority Queue System</div>
-                <div class="legend-item"><div class="legend-dot dot-urgent"></div> Over 5 days (no completion date) - URGENT</div>
-                <div class="legend-item"><div class="legend-dot dot-dated"></div> Has completion date - Sorted by due date</div>
-                <div class="legend-item"><div class="legend-dot dot-normal"></div> Under 5 days - Oldest first</div>
-            </div>
-            
-            <div id="jobsList"></div>
-            
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <div class="empty-icon">🚗</div>
-                <h3 style="color: var(--chrome); margin-bottom: 8px;">No Jobs Yet</h3>
-                <p>Tap "New Job" to create your first detailing job</p>
-            </div>
-        </div>
-        
-        <!-- New Job Form View -->
-        <div id="newJobView" class="view">
-            <form id="jobForm" onsubmit="saveJob(event)">
-                <!-- Vehicle Details -->
-                <div class="form-section">
-                    <div class="section-title">Vehicle Information</div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Registration Number</label>
-                        <div class="input-with-action">
-                            <input type="text" id="regNumber" class="form-input" placeholder="e.g., S123 ABC" required>
-                            <button type="button" class="input-action-btn" onclick="openScanner('reg')" title="Scan Plate">
-                                📷
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Make & Model</label>
-                        <div class="input-with-action">
-                            <input type="text" id="carModel" class="form-input" placeholder="e.g., Toyota Hilux SR5" required>
-                            <button type="button" class="input-action-btn" onclick="openScanner('compliance')" title="Scan Compliance Plate">
-                                🔍
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">VIN Number</label>
-                        <input type="text" id="vinNumber" class="form-input" placeholder="Scan compliance plate to auto-fill">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Build / Compliance Date</label>
-                        <input type="text" id="buildDate" class="form-input" placeholder="MM/YYYY or MMM YYYY">
-                    </div>
-                </div>
-                
-                <!-- Job Details -->
-                <div class="form-section">
-                    <div class="section-title">Job Details</div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Pick Up Date</label>
-                        <input type="date" id="pickupDate" class="form-input" required>
-                    </div>
-                    
-                    <div class="checkbox-group" onclick="document.getElementById('noCompletion').click()">
-                        <input type="checkbox" id="noCompletion" onchange="toggleCompletionDate()">
-                        <label for="noCompletion">No estimated completion date (TBD / Awaiting Parts)</label>
-                    </div>
-                    
-                    <div class="form-group" id="completionDateGroup">
-                        <label class="form-label">Estimated Completion</label>
-                        <input type="date" id="completionDate" class="form-input">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Work Required</label>
-                        <textarea id="workRequired" class="form-textarea" placeholder="Describe repair, paint, or detailing work required..." required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Priority Status</label>
-                        <select id="priority" class="form-select">
-                            <option value="normal">Normal</option>
-                            <option value="urgent">Urgent - Rush Job</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Photos -->
-                <div class="form-section">
-                    <div class="section-title">Vehicle Photos</div>
-                    <p style="font-size: 12px; color: var(--chrome-dark); margin-bottom: 12px; line-height: 1.4;">
-                        Tap slots to capture photos. Recommended: Front, Rear, Left, Right, Interior, Damage, Engine Bay, VIN Plate
-                    </p>
-                    <div class="photo-grid" id="photoGrid"></div>
-                </div>
-                
-                <button type="submit" class="submit-btn">Create Job & Save</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Scanner Modal -->
-    <div id="scannerModal" class="scanner-modal">
-        <div class="scanner-header">
-            <div class="scanner-title" id="scannerTitle">Scan Registration</div>
-            <button class="close-btn" onclick="closeScanner()">×</button>
-        </div>
-        <div class="scanner-viewfinder">
-            <video id="cameraFeed" autoplay playsinline></video>
-            <div class="scan-overlay">
-                <div class="scan-line"></div>
-            </div>
-            <div class="scan-instructions" id="scanInstructions">
-                Position text clearly within the red frame and hold steady
-            </div>
-            <div class="ocr-progress" id="ocrProgress">
-                <div id="ocrStatus">Initializing OCR engine...</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-            </div>
-        </div>
-        <div class="capture-btn" onclick="captureScan()"></div>
-    </div>
-    
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
+  <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
-    <script>
-        // State Management
-        let jobs = JSON.parse(localStorage.getItem('detailingJobs_v3') || '[]');
-        let currentPhotos = new Array(8).fill(null);
-        let currentPhotoIndex = 0;
-        let scannerMode = 'reg';
-        let stream = null;
-        let tesseractWorker = null;
-        let isOcrReady = false;
-        
-        // Initialize Tesseract
-        async function initTesseract() {
-            if (isOcrReady) return;
-            
-            try {
-                showToast('Loading OCR engine... Please wait');
-                tesseractWorker = await Tesseract.createWorker();
-                await tesseractWorker.load();
-                await tesseractWorker.loadLanguage('eng');
-                await tesseractWorker.initialize('eng');
-                isOcrReady = true;
-                showToast('✓ OCR Ready - You can now scan plates');
-            } catch (err) {
-                console.error('OCR Init failed:', err);
-                showToast('⚠ OCR failed to load. Manual entry only.');
+  <div class="container">
+    <div class="logo-header">
+      <div class="logo-shell">
+        <div class="logo-container">
+          <div class="brand-kicker">Run Sheet & Job Manager</div>
+          <img
+            src="logo.png"
+            alt="Detailing Auto Care SA"
+            class="company-logo"
+            onerror="this.style.display='none'; document.getElementById('fallbackBrand').style.display='block';"
+          />
+          <div id="fallbackBrand" style="display:none;">
+            <div style="font-size:28px;font-weight:900;letter-spacing:0.08em;color:var(--chrome-bright);text-transform:uppercase;">Detailing</div>
+            <div style="font-size:16px;font-weight:800;letter-spacing:0.18em;color:#d3dae4;text-transform:uppercase;margin-top:4px;">Auto Care SA</div>
+          </div>
+          <div class="brand-subtitle">
+            Cleaned up to match your logo properly — dark navy, chrome silver, hard red accents, and a bit of icy blue to tie into the headlights/spray highlights.
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="header-btn" onclick="exportRunSheet()">📄 Export Run Sheet</button>
+          <button class="header-btn secondary" onclick="clearAllData()">🗑️ Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('jobs')">Job Run Sheet</button>
+      <button class="nav-tab" onclick="switchTab('new')">+ New Job</button>
+    </div>
+
+    <div id="jobsView" class="view active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="activeCount">0</div>
+          <div class="stat-label">Active Jobs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value red" id="urgentCount">0</div>
+          <div class="stat-label">Urgent Queue</div>
+        </div>
+      </div>
+
+      <div class="queue-legend">
+        <div class="queue-legend-title">⚠ Priority Queue System</div>
+        <div class="legend-item"><div class="legend-dot dot-urgent"></div> No completion date + over 5 days in queue = urgent</div>
+        <div class="legend-item"><div class="legend-dot dot-dated"></div> Has estimated completion date = sorted by due date</div>
+        <div class="legend-item"><div class="legend-dot dot-normal"></div> No due date yet = sorted by pickup date</div>
+      </div>
+
+      <div id="jobsList"></div>
+
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="empty-icon">🏁</div>
+        <div class="empty-title">No Jobs Yet</div>
+        <p>Hit <strong>New Job</strong> and start stacking the board.</p>
+      </div>
+    </div>
+
+    <div id="newJobView" class="view">
+      <form id="jobForm" onsubmit="saveJob(event)">
+        <div class="form-section">
+          <div class="section-title">Vehicle Information</div>
+
+          <div class="form-group">
+            <label class="form-label">Registration Number</label>
+            <div class="input-with-action">
+              <input type="text" id="regNumber" class="form-input" placeholder="e.g. S123 ABC" required />
+              <button type="button" class="input-action-btn" onclick="openScanner('reg')" title="Scan Plate">📷</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Make & Model</label>
+            <div class="input-with-action">
+              <input type="text" id="carModel" class="form-input" placeholder="e.g. Toyota Hilux SR5" required />
+              <button type="button" class="input-action-btn" onclick="openScanner('compliance')" title="Scan Compliance Plate">🔍</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">VIN Number</label>
+            <input type="text" id="vinNumber" class="form-input" placeholder="Scan compliance plate to auto-fill" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Build / Compliance Date</label>
+            <input type="text" id="buildDate" class="form-input" placeholder="MM/YYYY or MMM YYYY" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">Job Details</div>
+
+          <div class="form-group">
+            <label class="form-label">Pick Up Date</label>
+            <input type="date" id="pickupDate" class="form-input" required />
+          </div>
+
+          <div class="checkbox-group" onclick="document.getElementById('noCompletion').click()">
+            <input type="checkbox" id="noCompletion" onchange="toggleCompletionDate()" />
+            <label for="noCompletion">No estimated completion date yet (TBD / awaiting parts / waiting on approval)</label>
+          </div>
+
+          <div class="form-group" id="completionDateGroup">
+            <label class="form-label">Estimated Completion</label>
+            <input type="date" id="completionDate" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Work Required</label>
+            <textarea id="workRequired" class="form-textarea" placeholder="Describe the repair, detail, correction, coating, or whatever the car is in for..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Priority Status</label>
+            <select id="priority" class="form-select">
+              <option value="normal">Normal</option>
+              <option value="urgent">Urgent - Rush Job</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">Vehicle Photos</div>
+          <div class="section-hint">
+            Tap a slot to add a photo. Good set: front, rear, left, right, interior, damage, engine bay, VIN plate.
+          </div>
+          <div class="photo-grid" id="photoGrid"></div>
+        </div>
+
+        <button type="submit" class="submit-btn">Create Job & Save</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="scannerModal" class="scanner-modal">
+    <div class="scanner-header">
+      <div class="scanner-title" id="scannerTitle">Scan Registration</div>
+      <button class="close-btn" onclick="closeScanner()">×</button>
+    </div>
+    <div class="scanner-viewfinder">
+      <video id="cameraFeed" autoplay playsinline></video>
+      <div class="scan-overlay">
+        <div class="scan-line"></div>
+      </div>
+      <div class="scan-instructions" id="scanInstructions">
+        Position text clearly within the frame and hold steady
+      </div>
+      <div class="ocr-progress" id="ocrProgress">
+        <div id="ocrStatus">Initializing OCR engine...</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+    <div class="capture-btn" onclick="captureScan()"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let jobs = JSON.parse(localStorage.getItem('detailingJobs_v4') || '[]');
+    let currentPhotos = new Array(8).fill(null);
+    let currentPhotoIndex = 0;
+    let scannerMode = 'reg';
+    let stream = null;
+    let tesseractWorker = null;
+    let isOcrReady = false;
+
+    async function initTesseract() {
+      if (isOcrReady) return;
+
+      try {
+        showToast('Loading OCR engine... hang on');
+        tesseractWorker = await Tesseract.createWorker('eng', 1, {
+          logger: m => {
+            if (m.status && typeof m.progress === 'number') {
+              const progressDiv = document.getElementById('ocrProgress');
+              const progressFill = document.getElementById('progressFill');
+              const statusText = document.getElementById('ocrStatus');
+              if (progressDiv) {
+                progressDiv.classList.add('active');
+                progressFill.style.width = `${Math.round(m.progress * 100)}%`;
+                statusText.textContent = m.status;
+              }
             }
-        }
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            renderJobs();
-            initPhotoGrid();
-            
-            // Set today's date as default for pickup
-            document.getElementById('pickupDate').valueAsDate = new Date();
-            
-            // Pre-init tesseract after short delay
-            setTimeout(initTesseract, 1000);
-            
-            // Setup file input
-            document.getElementById('fileInput').onchange = handleFileSelect;
+          }
         });
-        
-        // Photo Grid
-        function initPhotoGrid() {
-            const grid = document.getElementById('photoGrid');
-            const labels = ['Front', 'Rear', 'Left', 'Right', 'Interior', 'Damage', 'Engine', 'VIN Plate'];
-            
-            grid.innerHTML = '';
-            for (let i = 0; i < 8; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'photo-slot';
-                if (currentPhotos[i]) slot.classList.add('has-image');
-                slot.onclick = () => selectPhotoSlot(i);
-                
-                if (currentPhotos[i]) {
-                    slot.innerHTML = `<img src="${currentPhotos[i]}" alt="Photo ${i+1}">`;
-                } else {
-                    slot.innerHTML = `
-                        <div class="add-photo-icon">+</div>
-                        <div class="photo-label">${labels[i]}</div>
-                    `;
-                }
-                grid.appendChild(slot);
-            }
+        isOcrReady = true;
+        showToast('✓ OCR ready');
+      } catch (err) {
+        console.error('OCR init failed:', err);
+        showToast('⚠ OCR failed to load. Manual entry only.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderJobs();
+      initPhotoGrid();
+
+      document.getElementById('pickupDate').valueAsDate = new Date();
+      setTimeout(initTesseract, 900);
+      document.getElementById('fileInput').onchange = handleFileSelect;
+    });
+
+    function initPhotoGrid() {
+      const grid = document.getElementById('photoGrid');
+      const labels = ['Front', 'Rear', 'Left', 'Right', 'Interior', 'Damage', 'Engine', 'VIN Plate'];
+
+      grid.innerHTML = '';
+      for (let i = 0; i < 8; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'photo-slot';
+        if (currentPhotos[i]) slot.classList.add('has-image');
+        slot.onclick = () => selectPhotoSlot(i);
+
+        if (currentPhotos[i]) {
+          slot.innerHTML = `<img src="${currentPhotos[i]}" alt="Photo ${i + 1}">`;
+        } else {
+          slot.innerHTML = `
+            <div class="add-photo-icon">+</div>
+            <div class="photo-label">${labels[i]}</div>
+          `;
         }
-        
-        function selectPhotoSlot(index) {
-            currentPhotoIndex = index;
-            document.getElementById('fileInput').click();
+        grid.appendChild(slot);
+      }
+    }
+
+    function selectPhotoSlot(index) {
+      currentPhotoIndex = index;
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Photo too large. Max 5MB.');
+        e.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
+          const scale = width / img.width;
+          canvas.width = width;
+          canvas.height = img.height * scale;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          currentPhotos[currentPhotoIndex] = canvas.toDataURL('image/jpeg', 0.78);
+          initPhotoGrid();
+          showToast('✓ Photo added');
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+
+    async function openScanner(mode) {
+      scannerMode = mode;
+      const modal = document.getElementById('scannerModal');
+      const title = document.getElementById('scannerTitle');
+      const instructions = document.getElementById('scanInstructions');
+
+      modal.classList.add('active');
+
+      if (mode === 'reg') {
+        title.textContent = 'SCAN REGO PLATE';
+        instructions.textContent = 'Position the registration plate inside the frame';
+      } else {
+        title.textContent = 'SCAN COMPLIANCE / VIN PLATE';
+        instructions.textContent = 'Position the VIN or compliance plate inside the frame';
+      }
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        });
+
+        const video = document.getElementById('cameraFeed');
+        video.srcObject = stream;
+        await video.play();
+      } catch (err) {
+        console.error(err);
+        showToast('Camera access denied. Check browser permissions.');
+        closeScanner();
+      }
+    }
+
+    function closeScanner() {
+      document.getElementById('scannerModal').classList.remove('active');
+      document.getElementById('ocrProgress').classList.remove('active');
+      document.getElementById('progressFill').style.width = '0%';
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+    }
+
+    async function captureScan() {
+      if (!isOcrReady) {
+        await initTesseract();
+        if (!isOcrReady) return;
+      }
+
+      const video = document.getElementById('cameraFeed');
+      if (!video.videoWidth || !video.videoHeight) {
+        showToast('Camera not ready yet.');
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      const progressDiv = document.getElementById('ocrProgress');
+      const progressFill = document.getElementById('progressFill');
+      const statusText = document.getElementById('ocrStatus');
+
+      progressDiv.classList.add('active');
+      progressFill.style.width = '12%';
+      statusText.textContent = 'Processing image...';
+
+      try {
+        const result = await tesseractWorker.recognize(canvas.toDataURL('image/jpeg', 0.9));
+        const text = (result?.data?.text || '').toUpperCase().trim();
+
+        progressFill.style.width = '100%';
+        statusText.textContent = 'Reading complete';
+
+        if (scannerMode === 'reg') {
+          processRegOCR(text);
+        } else {
+          processComplianceOCR(text);
         }
-        
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('Photo too large. Max 5MB.');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1200;
-                    const scale = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scale;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    currentPhotos[currentPhotoIndex] = canvas.toDataURL('image/jpeg', 0.7);
-                    initPhotoGrid();
-                    showToast('✓ Photo added successfully');
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-            e.target.value = '';
+
+        setTimeout(closeScanner, 450);
+      } catch (err) {
+        console.error(err);
+        showToast('OCR failed. Type it manually if needed.');
+        closeScanner();
+      }
+    }
+
+    function processRegOCR(text) {
+      const patterns = [
+        /\b([SST][0-9]{3}[A-Z]{2,3})\b/,
+        /\b([0-9]{3}[-\s]?[A-Z]{3})\b/,
+        /\b([A-Z]{2,3}[-\s]?[0-9]{2,4})\b/,
+        /\b([0-9]{1,3}[-\s][A-Z]{1,3}[-\s][0-9]{0,2})\b/
+      ];
+
+      let foundReg = null;
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+          foundReg = match[1].replace(/[-\s]/g, '');
+          break;
         }
-        
-        // Scanner Functions
-        async function openScanner(mode) {
-            scannerMode = mode;
-            const modal = document.getElementById('scannerModal');
-            const title = document.getElementById('scannerTitle');
-            const instructions = document.getElementById('scanInstructions');
-            
-            modal.classList.add('active');
-            
-            if (mode === 'reg') {
-                title.textContent = 'SCAN REGO PLATE';
-                instructions.textContent = 'Position registration plate clearly within the red frame';
-            } else {
-                title.textContent = 'SCAN COMPLIANCE PLATE';
-                instructions.textContent = 'Position VIN/build date plate within the red frame';
-            }
-            
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    } 
-                });
-                const video = document.getElementById('cameraFeed');
-                video.srcObject = stream;
-                await video.play();
-            } catch (err) {
-                showToast('Camera access denied. Check browser permissions.');
-                closeScanner();
-            }
+      }
+
+      if (!foundReg) {
+        const words = text.split(/\s+/);
+        for (const word of words) {
+          const clean = word.replace(/[^A-Z0-9]/g, '');
+          if (clean.length >= 5 && clean.length <= 8 && /[0-9]/.test(clean) && /[A-Z]/.test(clean)) {
+            foundReg = clean;
+            break;
+          }
         }
-        
-        function closeScanner() {
-            document.getElementById('scannerModal').classList.remove('active');
-            document.getElementById('ocrProgress').classList.remove('active');
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
+      }
+
+      if (foundReg) {
+        document.getElementById('regNumber').value = foundReg;
+        showToast('✓ Registration detected: ' + foundReg);
+      } else {
+        showToast('⚠ No rego detected. Type it manually.');
+      }
+    }
+
+    function processComplianceOCR(text) {
+      const vinMatch = text.match(/\b([A-HJ-NPR-Z0-9]{17})\b/);
+      if (vinMatch) {
+        document.getElementById('vinNumber').value = vinMatch[1];
+      }
+
+      const datePatterns = [
+        /\b(0[1-9]|1[0-2])[\/\.](19|20)\d{2}\b/,
+        /\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[\s\.]+(19|20)\d{2}\b/i,
+        /\b(19|20)\d{2}[\/\.\-\s](0[1-9]|1[0-2])\b/
+      ];
+
+      for (const pattern of datePatterns) {
+        const match = text.match(pattern);
+        if (match) {
+          document.getElementById('buildDate').value = match[0];
+          break;
         }
-        
-        async function captureScan() {
-            if (!isOcrReady) {
-                await initTesseract();
-            }
-            
-            const video = document.getElementById('cameraFeed');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            
-            const progressDiv = document.getElementById('ocrProgress');
-            const progressFill = document.getElementById('progressFill');
-            const statusText = document.getElementById('ocrStatus');
-            
-            progressDiv.classList.add('active');
-            progressFill.style.width = '20%';
-            statusText.textContent = 'Processing image...';
-            
-            try {
-                progressFill.style.width = '50%';
-                statusText.textContent = 'Reading text with OCR...';
-                
-                const result = await tesseractWorker.recognize(canvas.toDataURL('image/jpeg'));
-                const text = result.data.text.toUpperCase().trim();
-                
-                progressFill.style.width = '100%';
-                statusText.textContent = 'Processing results...';
-                
-                console.log('OCR Raw Text:', text);
-                
-                if (scannerMode === 'reg') {
-                    processRegOCR(text);
-                } else {
-                    processComplianceOCR(text);
-                }
-                
-                setTimeout(() => {
-                    closeScanner();
-                }, 500);
-                
-            } catch (err) {
-                showToast('OCR failed: ' + err.message);
-                closeScanner();
-            }
+      }
+
+      const makes = [
+        'TOYOTA', 'HOLDEN', 'FORD', 'MAZDA', 'HYUNDAI', 'KIA', 'SUBARU', 'MITSUBISHI',
+        'NISSAN', 'HONDA', 'VOLKSWAGEN', 'VW', 'BMW', 'MERCEDES', 'AUDI', 'LEXUS'
+      ];
+
+      const foundMake = makes.find(make => text.includes(make));
+      if (foundMake && !document.getElementById('carModel').value) {
+        document.getElementById('carModel').value = foundMake + ' ';
+      }
+
+      if (vinMatch) {
+        showToast('✓ VIN scanned');
+      } else if (foundMake) {
+        showToast('✓ Some compliance data detected');
+      } else {
+        showToast('⚠ Could not pull much from that plate. Try again or type it.');
+      }
+    }
+
+    function toggleCompletionDate() {
+      const checkbox = document.getElementById('noCompletion');
+      const dateGroup = document.getElementById('completionDateGroup');
+      const dateInput = document.getElementById('completionDate');
+
+      if (checkbox.checked) {
+        dateGroup.style.display = 'none';
+        dateInput.disabled = true;
+        dateInput.value = '';
+      } else {
+        dateGroup.style.display = 'block';
+        dateInput.disabled = false;
+      }
+    }
+
+    function saveJob(e) {
+      e.preventDefault();
+
+      const noCompletion = document.getElementById('noCompletion').checked;
+
+      const job = {
+        id: Date.now(),
+        regNumber: document.getElementById('regNumber').value.toUpperCase().trim(),
+        carModel: document.getElementById('carModel').value.trim(),
+        vinNumber: document.getElementById('vinNumber').value.trim(),
+        buildDate: document.getElementById('buildDate').value.trim(),
+        pickupDate: document.getElementById('pickupDate').value,
+        completionDate: noCompletion ? null : document.getElementById('completionDate').value,
+        workRequired: document.getElementById('workRequired').value.trim(),
+        priority: document.getElementById('priority').value,
+        photos: currentPhotos.filter(Boolean),
+        created: new Date().toISOString(),
+        noCompletion
+      };
+
+      if (!job.regNumber || !job.carModel || !job.pickupDate || !job.workRequired) {
+        showToast('⚠ Fill in the required fields first.');
+        return;
+      }
+
+      if (!noCompletion && !job.completionDate) {
+        showToast('⚠ Add a completion date or tick no estimated date.');
+        return;
+      }
+
+      jobs.push(job);
+      localStorage.setItem('detailingJobs_v4', JSON.stringify(jobs));
+
+      showToast('✓ Job created');
+
+      document.getElementById('jobForm').reset();
+      currentPhotos = new Array(8).fill(null);
+      initPhotoGrid();
+      document.getElementById('pickupDate').valueAsDate = new Date();
+      document.getElementById('completionDateGroup').style.display = 'block';
+      document.getElementById('completionDate').disabled = false;
+
+      switchTab('jobs');
+    }
+
+    function getSortedJobs() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const jobsWithMeta = jobs.map(job => {
+        const pickupDate = new Date(job.pickupDate);
+        pickupDate.setHours(0, 0, 0, 0);
+
+        const completionDate = job.completionDate ? new Date(job.completionDate) : null;
+        if (completionDate) completionDate.setHours(0, 0, 0, 0);
+
+        const daysSincePickup = Math.floor((today - pickupDate) / (1000 * 60 * 60 * 24));
+        const isCompleted = job.priority === 'completed';
+        const isUrgentFromAge = job.noCompletion && !job.completionDate && daysSincePickup > 5;
+        const isUrgent = isUrgentFromAge || job.priority === 'urgent';
+        const sortDate = completionDate || pickupDate;
+
+        return {
+          ...job,
+          pickupDateObj: pickupDate,
+          completionDateObj: completionDate,
+          daysSincePickup,
+          isUrgent,
+          sortDate,
+          isCompleted
+        };
+      });
+
+      const activeJobs = jobsWithMeta.filter(j => !j.isCompleted);
+      const completedJobs = jobsWithMeta.filter(j => j.isCompleted);
+
+      activeJobs.sort((a, b) => {
+        const aAgedUrgent = a.noCompletion && !a.completionDate && a.daysSincePickup > 5;
+        const bAgedUrgent = b.noCompletion && !b.completionDate && b.daysSincePickup > 5;
+
+        if (aAgedUrgent && !bAgedUrgent) return -1;
+        if (!aAgedUrgent && bAgedUrgent) return 1;
+
+        if (!!a.completionDate && !b.completionDate) return -1;
+        if (!a.completionDate && !!b.completionDate) return 1;
+
+        if (a.priority === 'urgent' && b.priority !== 'urgent') return -1;
+        if (a.priority !== 'urgent' && b.priority === 'urgent') return 1;
+
+        return a.sortDate - b.sortDate;
+      });
+
+      completedJobs.sort((a, b) => b.sortDate - a.sortDate);
+
+      return [...activeJobs, ...completedJobs];
+    }
+
+    function renderJobs() {
+      const list = document.getElementById('jobsList');
+      const empty = document.getElementById('emptyState');
+
+      if (jobs.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        updateStats();
+        return;
+      }
+
+      empty.style.display = 'none';
+      const sortedJobs = getSortedJobs();
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      list.innerHTML = sortedJobs.map(job => {
+        const hasCompletion = !!job.completionDate;
+        const isCompleted = job.isCompleted;
+
+        let statusClass = 'status-pending';
+        let statusText = 'ACTIVE';
+        let cardClass = hasCompletion ? 'status-dated' : '';
+
+        const completionDate = job.completionDate ? new Date(job.completionDate) : null;
+        if (completionDate) completionDate.setHours(0,0,0,0);
+
+        const isDueToday = hasCompletion && completionDate.getTime() === today.getTime();
+        const isOverdue = hasCompletion && completionDate.getTime() < today.getTime();
+        const isAgedUrgent = job.noCompletion && !job.completionDate && job.daysSincePickup > 5;
+
+        if (isCompleted) {
+          statusClass = 'status-completed';
+          statusText = 'DONE';
+          cardClass = 'status-completed';
+        } else if (isAgedUrgent) {
+          statusClass = 'status-urgent';
+          statusText = '⚠ OVER 5 DAYS';
+          cardClass = 'status-urgent';
+        } else if (isOverdue) {
+          statusClass = 'status-urgent';
+          statusText = 'OVERDUE';
+          cardClass = 'status-urgent';
+        } else if (isDueToday) {
+          statusClass = 'status-urgent';
+          statusText = 'DUE TODAY';
+          cardClass = 'status-dated';
+        } else if (job.priority === 'urgent') {
+          statusClass = 'status-urgent';
+          statusText = 'RUSH JOB';
+          cardClass = 'status-dated';
+        } else if (job.noCompletion) {
+          statusClass = 'status-tbd';
+          statusText = 'TBD';
+          cardClass = 'status-tbd';
         }
-        
-        function processRegOCR(text) {
-            const patterns = [
-                /\b([SST][0-9]{3}[A-Z]{2,3})\b/,
-                /\b([0-9]{3}[-\s]?[A-Z]{3})\b/,
-                /\b([A-Z]{2,3}[-\s]?[0-9]{2,4})\b/,
-                /\b([0-9]{1,3}[-\s][A-Z]{1,3}[-\s][0-9]{0,2})\b/
-            ];
-            
-            let foundReg = null;
-            for (let pattern of patterns) {
-                const match = text.match(pattern);
-                if (match) {
-                    foundReg = match[1].replace(/[-\s]/g, '');
-                    break;
-                }
-            }
-            
-            if (!foundReg) {
-                const words = text.split(/\s+/);
-                for (let word of words) {
-                    const clean = word.replace(/[^A-Z0-9]/g, '');
-                    if (clean.length >= 5 && clean.length <= 8 && /[0-9]/.test(clean) && /[A-Z]/.test(clean)) {
-                        foundReg = clean;
-                        break;
-                    }
-                }
-            }
-            
-            if (foundReg) {
-                document.getElementById('regNumber').value = foundReg;
-                showToast('✓ Registration detected: ' + foundReg);
-            } else {
-                showToast('⚠ No registration detected. Please type manually.');
-            }
+
+        const dateLabel = hasCompletion ? 'Due' : 'Pick Up';
+
+        return `
+          <div class="job-card ${cardClass}" onclick="viewJob(${job.id})">
+            <div class="job-header">
+              <div class="car-info">
+                <h3>${escapeHtml(job.carModel)}</h3>
+                <span class="reg-plate">${escapeHtml(job.regNumber)}</span>
+              </div>
+              <span class="job-status ${statusClass}">${statusText}</span>
+            </div>
+
+            <div class="job-details">
+              <div class="detail-item">
+                <span class="detail-label">Pick Up</span>
+                <span>${formatDate(job.pickupDate)}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">${dateLabel}</span>
+                <span>${hasCompletion ? formatDate(job.completionDate) : (job.noCompletion ? 'TBD' : formatDate(job.pickupDate))}</span>
+              </div>
+
+              ${isAgedUrgent ? `
+                <div class="urgent-warning">
+                  ⚠ ${job.daysSincePickup} days in queue — no completion date set
+                </div>
+              ` : ''}
+
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <span class="detail-label">Work Required</span>
+                <span>${escapeHtml(job.workRequired.substring(0, 80))}${job.workRequired.length > 80 ? '…' : ''}</span>
+              </div>
+
+              ${job.vinNumber ? `
+                <div class="detail-item">
+                  <span class="detail-label">VIN</span>
+                  <span>${escapeHtml(job.vinNumber.substring(0, 8))}...</span>
+                </div>
+              ` : ''}
+
+              ${job.buildDate ? `
+                <div class="detail-item">
+                  <span class="detail-label">Build Date</span>
+                  <span>${escapeHtml(job.buildDate)}</span>
+                </div>
+              ` : ''}
+            </div>
+
+            ${job.photos.length > 0 ? `
+              <div class="thumbnail-strip">
+                ${job.photos.slice(0, 4).map(photo => `<img src="${photo}" class="thumb" alt="Vehicle photo">`).join('')}
+                ${job.photos.length > 4 ? `<div class="thumb" style="background:rgba(8,16,28,0.85);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--chrome);border:1px solid rgba(255,255,255,0.15);">+${job.photos.length - 4}</div>` : ''}
+              </div>
+            ` : ''}
+
+            <button class="delete-btn" onclick="event.stopPropagation(); deleteJob(${job.id})">Delete Job</button>
+          </div>
+        `;
+      }).join('');
+
+      updateStats();
+    }
+
+    function updateStats() {
+      const sortedJobs = getSortedJobs();
+      const activeJobs = sortedJobs.filter(j => !j.isCompleted);
+      const urgentJobs = activeJobs.filter(j => j.isUrgent);
+      document.getElementById('activeCount').textContent = activeJobs.length;
+      document.getElementById('urgentCount').textContent = urgentJobs.length;
+    }
+
+    function deleteJob(id) {
+      if (confirm('Delete this job permanently?')) {
+        jobs = jobs.filter(j => j.id !== id);
+        localStorage.setItem('detailingJobs_v4', JSON.stringify(jobs));
+        renderJobs();
+        showToast('Job deleted');
+      }
+    }
+
+    function viewJob(id) {
+      const job = jobs.find(j => j.id === id);
+      if (!job) return;
+      showToast(`${job.regNumber} • ${job.carModel}`);
+    }
+
+    function clearAllData() {
+      if (confirm('Delete ALL jobs? This cannot be undone.')) {
+        if (confirm('Really wipe the lot?')) {
+          jobs = [];
+          localStorage.removeItem('detailingJobs_v4');
+          renderJobs();
+          showToast('All data cleared');
         }
-        
-        function processComplianceOCR(text) {
-            const vinMatch = text.match(/\b([A-HJ-NPR-Z0-9]{17})\b/);
-            if (vinMatch) {
-                document.getElementById('vinNumber').value = vinMatch[1];
-                showToast('✓ VIN detected');
+      }
+    }
+
+    function exportRunSheet() {
+      const today = new Date().toLocaleDateString('en-AU');
+      const sortedJobs = getSortedJobs();
+      const activeJobs = sortedJobs.filter(j => !j.isCompleted);
+
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Detailing Auto Care SA - Run Sheet ${today}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              background: #f3f6fa;
+              color: #07111f;
             }
-            
-            const datePatterns = [
-                /(0[1-9]|1[0-2])[\/\.](19|20)\d{2}/,
-                /(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[\s\.]+(19|20)\d{2}/i,
-                /(19|20)\d{2}[\s\.](0[1-9]|1[0-2])/
-            ];
-            
-            for (let pattern of datePatterns) {
-                const match = text.match(pattern);
-                if (match) {
-                    document.getElementById('buildDate').value = match[0];
-                    showToast('✓ Build date detected');
-                    break;
-                }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding: 24px;
+              background: linear-gradient(135deg, #07111f 0%, #0d2038 100%);
+              color: white;
+              border-radius: 18px;
+              border-left: 5px solid #e11622;
             }
-            
-            const makes = ['TOYOTA', 'HOLDEN', 'FORD', 'MAZDA', 'HYUNDAI', 'KIA', 'SUBARU', 'MITSUBISHI', 
-                          'NISSAN', 'HONDA', 'VOLKSWAGEN', 'VW', 'BMW', 'MERCEDES', 'AUDI', 'LEXUS'];
-            const foundMakes = makes.filter(make => text.includes(make));
-            
-            if (foundMakes.length > 0 && !document.getElementById('carModel').value) {
-                document.getElementById('carModel').value = foundMakes[0] + ' ';
-                showToast('✓ Make detected: ' + foundMakes[0]);
+            .logo {
+              max-width: 200px;
+              height: auto;
+              margin: 0 auto 12px;
+              display: block;
             }
-            
-            if (!vinMatch && foundMakes.length === 0) {
-                showToast('⚠ Limited data detected. Check VIN plate positioning.');
+            h1 {
+              color: #ffffff;
+              margin: 0 0 10px;
+              font-size: 28px;
             }
-        }
-        
-        // Form Functions
-        function toggleCompletionDate() {
-            const checkbox = document.getElementById('noCompletion');
-            const dateGroup = document.getElementById('completionDateGroup');
-            const dateInput = document.getElementById('completionDate');
-            
-            if (checkbox.checked) {
-                dateGroup.style.display = 'none';
-                dateInput.disabled = true;
-                dateInput.value = '';
-            } else {
-                dateGroup.style.display = 'block';
-                dateInput.disabled = false;
+            .meta {
+              color: #c6d0dd;
+              margin-bottom: 0;
             }
-        }
-        
-        function saveJob(e) {
-            e.preventDefault();
-            
-            const noCompletion = document.getElementById('noCompletion').checked;
-            
-            const job = {
-                id: Date.now(),
-                regNumber: document.getElementById('regNumber').value.toUpperCase().trim(),
-                carModel: document.getElementById('carModel').value.trim(),
-                vinNumber: document.getElementById('vinNumber').value.trim(),
-                buildDate: document.getElementById('buildDate').value.trim(),
-                pickupDate: document.getElementById('pickupDate').value,
-                completionDate: noCompletion ? null : document.getElementById('completionDate').value,
-                workRequired: document.getElementById('workRequired').value.trim(),
-                priority: document.getElementById('priority').value,
-                photos: currentPhotos.filter(p => p),
-                created: new Date().toISOString(),
-                noCompletion: noCompletion
-            };
-            
-            if (!job.regNumber || !job.carModel || !job.pickupDate || !job.workRequired) {
-                showToast('⚠ Please fill in all required fields');
-                return;
+            .urgent-banner {
+              background: #ff3b30;
+              color: white;
+              padding: 14px;
+              border-radius: 10px;
+              margin-bottom: 20px;
+              font-weight: 700;
+              text-align: center;
             }
-            
-            if (!noCompletion && !job.completionDate) {
-                showToast('⚠ Please select completion date or check "No estimated date"');
-                return;
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+              background: white;
+              box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+              border-radius: 12px;
+              overflow: hidden;
             }
-            
-            jobs.push(job);
-            localStorage.setItem('detailingJobs_v3', JSON.stringify(jobs));
-            
-            showToast('✓ Job created successfully!');
-            
-            document.getElementById('jobForm').reset();
-            currentPhotos = new Array(8).fill(null);
-            initPhotoGrid();
-            document.getElementById('pickupDate').valueAsDate = new Date();
-            document.getElementById('completionDateGroup').style.display = 'block';
-            document.getElementById('completionDate').disabled = false;
-            
-            switchTab('jobs');
-        }
-        
-        // Sorting Logic:
-        // 1. Jobs WITH completion date come first (sorted by completion date, oldest first)
-        // 2. Jobs WITHOUT completion date over 5 days = URGENT (red, top priority)
-        // 3. Jobs WITHOUT completion date under 5 days sorted by pickup date (oldest first)
-        function getSortedJobs() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const jobsWithMeta = jobs.map(job => {
-                const pickupDate = new Date(job.pickupDate);
-                pickupDate.setHours(0, 0, 0, 0);
-                
-                const completionDate = job.completionDate ? new Date(job.completionDate) : null;
-                if (completionDate) completionDate.setHours(0, 0, 0, 0);
-                
-                const daysSincePickup = Math.floor((today - pickupDate) / (1000 * 60 * 60 * 24));
-                
-                // Is this urgent? (No completion date AND over 5 days old)
-                const isUrgent = !job.noCompletion && !job.completionDate && daysSincePickup > 5;
-                
-                // For sorting: use completion date if available, otherwise use pickup date
-                const sortDate = completionDate || pickupDate;
-                
-                const isCompleted = job.priority === 'completed';
-                
-                return {
-                    ...job,
-                    pickupDateObj: pickupDate,
-                    completionDateObj: completionDate,
-                    daysSincePickup,
-                    isUrgent,
-                    sortDate,
-                    isCompleted
-                };
-            });
-            
-            const activeJobs = jobsWithMeta.filter(j => !j.isCompleted);
-            const completedJobs = jobsWithMeta.filter(j => j.isCompleted);
-            
-            // Sort active jobs:
-            // 1. Urgent jobs (no completion, over 5 days) first
-            // 2. Then jobs with completion date (sorted by completion date, oldest first)
-            // 3. Then jobs without completion date under 5 days (sorted by pickup, oldest first)
-            activeJobs.sort((a, b) => {
-                // Urgent jobs (no completion, over 5 days) come first
-                if (a.isUrgent && !b.isUrgent) return -1;
-                if (!a.isUrgent && b.isUrgent) return 1;
-                
-                // Both urgent or both not urgent - sort by date (oldest first)
-                return a.sortDate - b.sortDate;
-            });
-            
-            // Completed jobs at bottom, sorted by completion date
-            completedJobs.sort((a, b) => a.sortDate - b.sortDate);
-            
-            return [...activeJobs, ...completedJobs];
-        }
-        
-        function renderJobs() {
-            const list = document.getElementById('jobsList');
-            const empty = document.getElementById('emptyState');
-            
-            if (jobs.length === 0) {
-                list.innerHTML = '';
-                empty.style.display = 'block';
-                updateStats();
-                return;
+            th {
+              background: #07111f;
+              color: #d7dde7;
+              padding: 14px;
+              text-align: left;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
             }
-            
-            empty.style.display = 'none';
-            
-            const sortedJobs = getSortedJobs();
-            const today = new Date().toISOString().split('T')[0];
-            
-            list.innerHTML = sortedJobs.map(job => {
-                const hasCompletion = !!job.completionDate;
-                const isCompleted = job.isCompleted;
-                const isUrgent = job.isUrgent;
-                const isDueToday = hasCompletion && job.completionDate === today;
-                const isOverdue = hasCompletion && new Date(job.completionDate) < new Date(today);
-                
-                let statusClass = 'status-pending';
-                let statusText = 'ACTIVE';
-                let cardClass = hasCompletion ? 'status-dated' : '';
-                
-                if (isCompleted) {
-                    statusClass = 'status-completed';
-                    statusText = 'DONE';
-                    cardClass = 'status-completed';
-                } else if (isUrgent) {
-                    statusClass = 'status-urgent';
-                    statusText = '⚠ OVER 5 DAYS';
-                    cardClass = 'status-urgent';
-                } else if (isOverdue) {
-                    statusClass = 'status-urgent';
-                    statusText = 'OVERDUE';
-                    cardClass = 'status-urgent';
-                } else if (isDueToday) {
-                    statusClass = 'status-urgent';
-                    statusText = 'DUE TODAY';
-                    cardClass = 'status-dated';
+            td {
+              padding: 12px 14px;
+              border-bottom: 1px solid #e9edf2;
+              vertical-align: top;
+            }
+            tr:nth-child(even) {
+              background: #f8fafc;
+            }
+            tr.urgent {
+              background: #fff0ef !important;
+              border-left: 4px solid #ff3b30;
+            }
+            .reg {
+              font-family: "Courier New", monospace;
+              font-weight: 900;
+              background: #ffd54f;
+              color: #07111f;
+              padding: 4px 8px;
+              border-radius: 6px;
+              border: 2px solid #07111f;
+              display: inline-block;
+            }
+            .urgent-text {
+              color: #cf1722;
+              font-weight: 700;
+            }
+            .footer {
+              margin-top: 36px;
+              text-align: center;
+              color: #5f6b7b;
+              font-size: 12px;
+              border-top: 2px solid #e11622;
+              padding-top: 18px;
+            }
+            @media print {
+              body { background: white; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <img src="logo.png" alt="Detailing Auto Care SA" class="logo" onerror="this.style.display='none';" />
+            <h1>Priority Run Sheet</h1>
+            <div class="meta">Generated: ${today} | Active Jobs: ${activeJobs.length}</div>
+          </div>
+
+          ${activeJobs.some(j => j.noCompletion && !j.completionDate && j.daysSincePickup > 5) ? `
+            <div class="urgent-banner">
+              ⚠ ${activeJobs.filter(j => j.noCompletion && !j.completionDate && j.daysSincePickup > 5).length} vehicle(s) over 5 days with no completion date set
+            </div>
+          ` : ''}
+
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Rego</th>
+                <th>Vehicle</th>
+                <th>Pick Up</th>
+                <th>Due / Status</th>
+                <th>Work Required</th>
+                <th>VIN</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${activeJobs.map((job, index) => {
+                const isAgedUrgent = job.noCompletion && !job.completionDate && job.daysSincePickup > 5;
+                const isOverdue = job.completionDate ? (new Date(job.completionDate) < new Date(new Date().toDateString())) : false;
+                let statusDisplay = '';
+
+                if (job.completionDate) {
+                  statusDisplay = formatDate(job.completionDate);
+                  if (isOverdue) statusDisplay += ' • OVERDUE';
                 } else if (job.noCompletion) {
-                    statusClass = 'status-tbd';
-                    statusText = 'TBD';
-                    cardClass = 'status-tbd';
+                  statusDisplay = 'TBD';
+                } else {
+                  statusDisplay = `${job.daysSincePickup} days old`;
                 }
-                
-                const displayDate = hasCompletion ? job.completionDate : job.pickupDate;
-                const dateLabel = hasCompletion ? 'Due' : 'Pick Up';
-                
+
                 return `
-                    <div class="job-card ${cardClass}" onclick="viewJob(${job.id})">
-                        <div class="job-header">
-                            <div class="car-info">
-                                <h3>${escapeHtml(job.carModel)}</h3>
-                                <span class="reg-plate">${escapeHtml(job.regNumber)}</span>
-                            </div>
-                            <span class="job-status ${statusClass}">${statusText}</span>
-                        </div>
-                        
-                        <div class="job-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Pick Up</span>
-                                <span>${formatDate(job.pickupDate)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">${dateLabel}</span>
-                                <span>${hasCompletion ? formatDate(job.completionDate) : (job.noCompletion ? 'TBD' : formatDate(job.pickupDate))}</span>
-                            </div>
-                            ${isUrgent ? `
-                            <div class="urgent-warning">
-                                ⚠ ${job.daysSincePickup} DAYS IN QUEUE - NO COMPLETION DATE SET
-                            </div>
-                            ` : ''}
-                            <div class="detail-item" style="grid-column: 1 / -1;">
-                                <span class="detail-label">Work Required</span>
-                                <span>${escapeHtml(job.workRequired.substring(0, 60))}${job.workRequired.length > 60 ? '...' : ''}</span>
-                            </div>
-                            ${job.vinNumber ? `
-                            <div class="detail-item">
-                                <span class="detail-label">VIN</span>
-                                <span>${escapeHtml(job.vinNumber.substring(0, 8))}...</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                        
-                        ${job.photos.length > 0 ? `
-                        <div class="thumbnail-strip">
-                            ${job.photos.slice(0, 4).map(photo => `<img src="${photo}" class="thumb">`).join('')}
-                            ${job.photos.length > 4 ? `<div class="thumb" style="background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--chrome); border: 2px solid var(--chrome);">+${job.photos.length - 4}</div>` : ''}
-                        </div>
-                        ` : ''}
-                        
-                        <button class="delete-btn" onclick="event.stopPropagation(); deleteJob(${job.id})">Delete Job</button>
-                    </div>
+                  <tr class="${isAgedUrgent ? 'urgent' : ''}">
+                    <td><strong>${index + 1}</strong></td>
+                    <td><span class="reg">${escapeHtml(job.regNumber)}</span></td>
+                    <td><strong>${escapeHtml(job.carModel)}</strong></td>
+                    <td>${formatDate(job.pickupDate)}</td>
+                    <td class="${isAgedUrgent || isOverdue ? 'urgent-text' : ''}">${statusDisplay}</td>
+                    <td>${escapeHtml(job.workRequired)}</td>
+                    <td style="font-family:monospace;font-size:11px;">${escapeHtml(job.vinNumber || '-')}</td>
+                  </tr>
                 `;
-            }).join('');
-            
-            updateStats();
-        }
-        
-        function updateStats() {
-            const sortedJobs = getSortedJobs();
-            const activeJobs = sortedJobs.filter(j => !j.isCompleted);
-            const urgentJobs = activeJobs.filter(j => j.isUrgent);
-            
-            document.getElementById('activeCount').textContent = activeJobs.length;
-            document.getElementById('urgentCount').textContent = urgentJobs.length;
-        }
-        
-        function deleteJob(id) {
-            if (confirm('Delete this job permanently?')) {
-                jobs = jobs.filter(j => j.id !== id);
-                localStorage.setItem('detailingJobs_v3', JSON.stringify(jobs));
-                renderJobs();
-                showToast('Job deleted');
-            }
-        }
-        
-        function viewJob(id) {
-            showToast('Tap "New Job" to create additional jobs');
-        }
-        
-        function clearAllData() {
-            if (confirm('⚠ WARNING: Delete ALL jobs? This cannot be undone!')) {
-                if (confirm('Are you absolutely sure? All data will be lost.')) {
-                    jobs = [];
-                    localStorage.removeItem('detailingJobs_v3');
-                    renderJobs();
-                    showToast('All data cleared');
-                }
-            }
-        }
-        
-        function exportRunSheet() {
-            const today = new Date().toLocaleDateString('en-AU');
-            const sortedJobs = getSortedJobs();
-            const activeJobs = sortedJobs.filter(j => !j.isCompleted);
-            
-            let printContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Detailing Auto Care SA - Run Sheet ${today}</title>
-                    <style>
-                        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
-                        body { 
-                            font-family: 'Roboto', Arial, sans-serif; 
-                            padding: 20px; 
-                            background: #f5f5f5;
-                            color: #0a0e27;
-                        }
-                        .header { 
-                            text-align: center; 
-                            margin-bottom: 30px;
-                            padding: 20px;
-                            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-                            color: white;
-                            border-radius: 12px;
-                            border-left: 5px solid #e63946;
-                        }
-                        .logo-img {
-                            max-width: 180px;
-                            height: auto;
-                            margin-bottom: 10px;
-                            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-                        }
-                        h1 { color: #e63946; margin: 10px 0; font-size: 24px; }
-                        .meta { color: #666; margin-bottom: 20px; }
-                        .urgent-banner {
-                            background: #ff0000;
-                            color: white;
-                            padding: 15px;
-                            border-radius: 8px;
-                            margin-bottom: 20px;
-                            font-weight: 700;
-                            text-align: center;
-                        }
-                        table { 
-                            width: 100%; 
-                            border-collapse: collapse; 
-                            margin-top: 20px;
-                            background: white;
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                            border-radius: 8px;
-                            overflow: hidden;
-                        }
-                        th { 
-                            background: #0a0e27; 
-                            color: #c0c0c0;
-                            padding: 15px;
-                            text-align: left;
-                            font-weight: 700;
-                            text-transform: uppercase;
-                            font-size: 12px;
-                            letter-spacing: 1px;
-                        }
-                        td { 
-                            padding: 12px 15px; 
-                            border-bottom: 1px solid #eee;
-                        }
-                        tr:nth-child(even) { background: #f8f9fa; }
-                        tr.urgent { background: #ffeeee !important; border-left: 4px solid #ff0000; }
-                        tr:hover { background: #e9ecef; }
-                        .reg { 
-                            font-family: 'Courier New', monospace; 
-                            font-weight: 900;
-                            background: #ffd700;
-                            color: #0a0e27;
-                            padding: 4px 8px;
-                            border-radius: 4px;
-                            border: 2px solid #0a0e27;
-                        }
-                        .urgent-text { color: #ff0000; font-weight: 700; }
-                        .tbd { color: #6c757d; font-style: italic; }
-                        .days-old { font-size: 11px; color: #666; }
-                        .footer {
-                            margin-top: 40px;
-                            text-align: center;
-                            color: #666;
-                            font-size: 12px;
-                            border-top: 2px solid #e63946;
-                            padding-top: 20px;
-                        }
-                        @media print {
-                            body { background: white; }
-                            .no-print { display: none; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>Priority Run Sheet</h1>
-                        <div class="meta">Generated: ${today} | Total Active Jobs: ${activeJobs.length}</div>
-                    </div>
-                    
-                    ${activeJobs.some(j => j.isUrgent) ? `
-                    <div class="urgent-banner">
-                        ⚠ WARNING: ${activeJobs.filter(j => j.isUrgent).length} job(s) over 5 days without completion date!
-                    </div>
-                    ` : ''}
-                    
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Priority</th>
-                                <th>Rego</th>
-                                <th>Vehicle</th>
-                                <th>Pick Up</th>
-                                <th>Due / Status</th>
-                                <th>Work Required</th>
-                                <th>VIN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${activeJobs.map((job, index) => {
-                                const isUrgent = job.isUrgent;
-                                const hasCompletion = !!job.completionDate;
-                                const isOverdue = hasCompletion && new Date(job.completionDate) < new Date();
-                                const rowClass = isUrgent ? 'urgent' : '';
-                                
-                                let statusDisplay = '';
-                                if (hasCompletion) {
-                                    statusDisplay = formatDate(job.completionDate);
-                                    if (isOverdue) statusDisplay += ' ⚠ OVERDUE';
-                                } else if (job.noCompletion) {
-                                    statusDisplay = 'TBD';
-                                } else {
-                                    statusDisplay = `${job.daysSincePickup} days old ⚠ SET DATE`;
-                                }
-                                
-                                return `
-                                <tr class="${rowClass}">
-                                    <td><strong>${index + 1}</strong></td>
-                                    <td><span class="reg">${job.regNumber}</span></td>
-                                    <td><strong>${job.carModel}</strong>${job.daysSincePickup > 0 ? `<br><span class="days-old">${job.daysSincePickup} days in queue</span>` : ''}</td>
-                                    <td>${formatDate(job.pickupDate)}</td>
-                                    <td class="${isUrgent || isOverdue ? 'urgent-text' : ''}">${statusDisplay}</td>
-                                    <td>${job.workRequired}</td>
-                                    <td style="font-family: monospace; font-size: 11px;">${job.vinNumber || '-'}</td>
-                                </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                    
-                    ${sortedJobs.some(j => j.isCompleted) ? `
-                    <h2 style="color: #4dabf7; margin-top: 40px; border-bottom: 2px solid #4dabf7; padding-bottom: 10px;">Completed Jobs</h2>
-                    <table>
-                        <thead>
-                            <tr style="background: #4dabf7;">
-                                <th>Rego</th>
-                                <th>Vehicle</th>
-                                <th>Completed</th>
-                                <th>Work Done</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${sortedJobs.filter(j => j.isCompleted).map(job => `
-                                <tr style="opacity: 0.7;">
-                                    <td><span class="reg">${job.regNumber}</span></td>
-                                    <td>${job.carModel}</td>
-                                    <td>${job.completionDate ? formatDate(job.completionDate) : 'N/A'}</td>
-                                    <td>${job.workRequired}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    ` : ''}
-                    
-                    ${sortedJobs.some(j => j.photos.length > 0) ? `
-                    <div style="margin-top: 40px; page-break-before: always;">
-                        <h2 style="color: #e63946; border-bottom: 3px solid #e63946; padding-bottom: 10px;">Photo Documentation</h2>
-                        ${sortedJobs.map(job => job.photos.length > 0 ? `
-                            <div style="margin-bottom: 30px; page-break-inside: avoid;">
-                                <h3 style="color: #0a0e27; margin-bottom: 10px;">${job.carModel} (${job.regNumber})</h3>
-                                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                                    ${job.photos.map(photo => `<img src="${photo}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">`).join('')}
-                                </div>
-                            </div>
-                        ` : '').join('')}
-                    </div>
-                    ` : ''}
-                    
-                    <div class="footer">
-                        <p>Detailing Auto Care SA - Professional Automotive Detailing & Paint Correction</p>
-                        <p style="margin-top: 10px; color: #e63946; font-weight: 700;">This run sheet is confidential and for internal use only.</p>
-                    </div>
-                    
-                    <div class="no-print" style="margin-top: 30px; text-align: center;">
-                        <button onclick="window.print()" style="padding: 15px 30px; background: #e63946; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px;">🖨️ Print Run Sheet</button>
-                    </div>
-                </body>
-                </html>
-            `;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-        }
-        
-        function switchTab(tab) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            
-            if (tab === 'jobs') {
-                document.getElementById('jobsView').classList.add('active');
-                document.querySelectorAll('.nav-tab')[0].classList.add('active');
-                renderJobs();
-            } else {
-                document.getElementById('newJobView').classList.add('active');
-                document.querySelectorAll('.nav-tab')[1].classList.add('active');
-            }
-        }
-        
-        function formatDate(dateStr) {
-            if (!dateStr || dateStr === 'TBD') return 'TBD';
-            try {
-                const [year, month, day] = dateStr.split('-');
-                return `${day}/${month}/${year}`;
-            } catch {
-                return dateStr;
-            }
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-        
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
-                self.addEventListener('fetch', event => {
-                    event.respondWith(fetch(event.request).catch(() => {
-                        return new Response('Offline mode');
-                    }));
-                });
-            `)).catch(() => console.log('SW registration skipped'));
-        }
-    </script>
+              }).join('')}
+            </tbody>
+          </table>
+
+          <div class="footer">
+            Detailing Auto Care SA • Internal run sheet
+          </div>
+
+          <div class="no-print" style="margin-top:30px;text-align:center;">
+            <button onclick="window.print()" style="padding:14px 28px;background:#e11622;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:16px;">
+              Print Run Sheet
+            </button>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+      if (tab === 'jobs') {
+        document.getElementById('jobsView').classList.add('active');
+        document.querySelectorAll('.nav-tab')[0].classList.add('active');
+        renderJobs();
+      } else {
+        document.getElementById('newJobView').classList.add('active');
+        document.querySelectorAll('.nav-tab')[1].classList.add('active');
+      }
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr || dateStr === 'TBD') return 'TBD';
+
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+      }
+
+      return dateStr;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text ?? '';
+      return div.innerHTML;
+    }
+
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+  </script>
 </body>
 </html>
