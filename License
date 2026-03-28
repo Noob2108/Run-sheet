@@ -1,0 +1,21 @@
+PROPRIETARY SOFTWARE LICENSE
+
+Copyright (c) 2026 Detailing Auto Care SA. All Rights Reserved.
+
+This software and associated documentation files (the "Software") are the 
+proprietary and confidential information of Detailing Auto Care SA 
+("Licensor"). 
+
+The Software is provided under the following terms:
+1. The Software may be used internally by authorized employees of Licensor
+2. Redistribution, modification, reverse engineering, or sublicensing is 
+   strictly prohibited without written consent
+3. The Software is provided "AS IS" without warranty of any kind
+
+For licensing inquiries, contact: Detailing Auto Care SA
+
+Unauthorized use, reproduction, or distribution of this Software is strictly 
+prohibited and may result in civil and criminal penalties.
+
+Third-party components:
+- Tesseract.js (Apache 2.0) - OCR functionality
